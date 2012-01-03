@@ -10,14 +10,17 @@ module Less
       def evaluate(context, locals, &block)
         import_paths = data.scan(IMPORT_SCANNER).flatten.compact.uniq
         import_paths.each do |path|
-          asset = context.environment[path]
-          if asset && asset.pathname.to_s.ends_with?('.less')
-            context.depend_on_asset(asset.pathname)
+          pathname = begin
+                       context.resolve(path)
+                     rescue FileNotFound
+                       nil
+                     end
+          if pathname && pathname.to_s.ends_with?('.less')
+            context.depend_on(path)
           end
         end
         data
       end
-      
     end
   end
 end
